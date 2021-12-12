@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,6 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'ecomapp',
+    'mpesa_api.core',
+    'mpesa_api.util',
+    'rangefilter',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +60,7 @@ ROOT_URLCONF = 'eshop.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -115,9 +121,54 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
+# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CELERY_BROKER_URL = 'amqp://guest:guest@127.0.0.1:5672//'
+
+ALLOWED_HOSTS = '*'
+
+CELERY_TASK_ALWAYS_EAGER=False
+
+# C2B (Paybill) Configs
+# See https://developer.safaricom.co.ke/c2b/apis/post/registerurl
+
+#Consumer Secret
+MPESA_C2B_ACCESS_KEY = config('MPESA_C2B_ACCESS_KEY')
+# Consumer Key
+MPESA_C2B_CONSUMER_SECRET = config('MPESA_C2B_CONSUMER_SECRET')
+# Url for registering your paybill replace it the url you get from safaricom after you have passed the UATS
+C2B_REGISTER_URL = config('C2B_REGISTER_URL')
+#ValidationURL
+# replace http://mpesa.ngrok.io/ with your url ow here this app is running
+C2B_VALIDATE_URL = config('C2B_VALIDATE_URL')
+#ConfirmationURL
+# replace http://mpesa.ngrok.io/ with your url ow here this app is running
+C2B_CONFIRMATION_URL = config('C2B_CONFIRMATION_URL')
+#ShortCode (Paybill)
+C2B_SHORT_CODE = config('C2B_SHORT_CODE')
+#ResponseType
+C2B_RESPONSE_TYPE = config('C2B_RESPONSE_TYPE')
+# this is the url where we post the B2C request to Mpesa. Replace this with the url you get from safaricom after you have passed the UATS
+MPESA_URL = config('MPESA_URL')
+
+
+# C2B (STK PUSH) Configs
+# https://developer.safaricom.co.ke/lipa-na-m-pesa-online/apis/post/stkpush/v1/processrequest
+
+#replace http://mpesa.ngrok.io/ with your url ow here this app is running
+C2B_ONLINE_CHECKOUT_CALLBACK_URL = config('C2B_ONLINE_CHECKOUT_CALLBACK_URL')
+# The Pass Key provided by Safaricom when you pass UAT's
+# See https://developer.safaricom.co.ke/test_credentials
+C2B_ONLINE_PASSKEY = config('C2B_ONLINE_PASSKEY')
+# Your Short code
+C2B_ONLINE_SHORT_CODE = config('C2B_ONLINE_SHORT_CODE', default='')
+# your paybill or till number
+C2B_ONLINE_PARTY_B = config('C2B_ONLINE_PARTY_B', default='')
+# number of seconds from the expiry we consider the token expired the token expires after an hour
+# so if the token is 600 sec (10 minutes) to expiry we consider the token expired.
+TOKEN_THRESHOLD = config('TOKEN_THRESHOLD', cast=int)
